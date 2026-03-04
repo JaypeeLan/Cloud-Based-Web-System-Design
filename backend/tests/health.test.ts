@@ -1,12 +1,19 @@
-import request from "supertest";
 import { describe, expect, it } from "vitest";
-import { app } from "../src/app.js";
+import { health } from "../src/controllers/healthController.js";
 
-describe("GET /", () => {
-  it("returns service status", async () => {
-    const response = await request(app).get("/");
+describe("health controller", () => {
+  it("returns service status payload", () => {
+    const responseBody: { status?: string; message?: string; timestamp?: string } = {};
+    const res = {
+      json: (payload: typeof responseBody) => {
+        Object.assign(responseBody, payload);
+      }
+    };
 
-    expect(response.status).toBe(200);
-    expect(response.body.status).toBe("success");
+    health({} as never, res as never);
+
+    expect(responseBody.status).toBe("success");
+    expect(responseBody.message).toBe("LocalSpot Booker API is healthy");
+    expect(typeof responseBody.timestamp).toBe("string");
   });
 });

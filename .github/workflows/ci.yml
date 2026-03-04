@@ -12,8 +12,9 @@ jobs:
       run:
         working-directory: backend
     env:
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      JWT_EXPIRES_IN: ${{ secrets.JWT_EXPIRES_IN }}
+      JWT_SECRET: ci-jwt-secret-1234567890
+      JWT_EXPIRES_IN: 1h
+      CLIENT_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
