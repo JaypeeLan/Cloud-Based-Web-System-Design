@@ -67,6 +67,26 @@ npm install
 npm run dev
 ```
 
+## Docker quick start (simple cloud-style integration)
+
+Run the entire stack (MongoDB + Backend + Frontend):
+
+```bash
+docker compose up --build
+```
+
+Services:
+
+- Frontend: `http://localhost:3000`
+- Backend API: `http://localhost:10000/api/v1`
+- Swagger docs: `http://localhost:10000/docs`
+
+Stop services:
+
+```bash
+docker compose down
+```
+
 ## Environment variables
 
 ### Backend (`backend/.env`)

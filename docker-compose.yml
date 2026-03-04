@@ -1,0 +1,42 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: localspot-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: localspot-backend
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    environment:
+      PORT: 10000
+      MONGODB_URI: mongodb://mongo:27017/localspot
+      JWT_SECRET: change-me-in-production
+      JWT_EXPIRES_IN: 1h
+      CLIENT_URL: http://localhost:3000
+    ports:
+      - "10000:10000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: localspot-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:10000/api/v1
+    ports:
+      - "3000:3000"
+
+volumes:
+  mongo_data:
