@@ -11,6 +11,9 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    env:
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      JWT_EXPIRES_IN: ${{ secrets.JWT_EXPIRES_IN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

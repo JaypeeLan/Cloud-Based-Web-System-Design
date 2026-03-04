@@ -38,6 +38,16 @@ npm install
 npm run dev
 ```
 
+### Swagger/OpenAPI docs
+
+When backend is running, open:
+
+- `http://localhost:5000/docs` (or your configured backend port)
+
+On Render, open:
+
+- `https://<your-render-service>.onrender.com/docs`
+
 ### Seed sample data
 
 ```bash
