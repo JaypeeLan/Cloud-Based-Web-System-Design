@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card } from "@/components/ui/Card";
+import { Pagination } from "@/components/ui/Pagination";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { ListingCard } from "@/features/listings/ListingCard";
 import { SearchBar } from "@/features/listings/SearchBar";
@@ -13,7 +14,7 @@ import { useAuth } from "@/providers/AuthProvider";
 export default function DiscoverPage() {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
-  const { listings, loading, search, reload } = useDiscover(user?.location);
+  const { listings, loading, page, totalPages, total, search, goToPage, reload } = useDiscover(user?.location);
 
   const runSearch = async (params: { area?: string; category?: "salon" | "eatery" | "event"; q?: string }) => {
     try {
@@ -61,7 +62,7 @@ export default function DiscoverPage() {
         <Card>
           <div className="row between">
             <h2>Results</h2>
-            <span className="muted-text">{listings.length} places</span>
+            <span className="muted-text">{total} places</span>
           </div>
 
           {loading ? (
@@ -70,12 +71,17 @@ export default function DiscoverPage() {
               <SkeletonCard />
               <SkeletonCard />
             </div>
+          ) : listings.length === 0 ? (
+            <p className="muted-text">No places match this search. Try a different area or category.</p>
           ) : (
-            <ul className="grid grid-3 list">
-              {listings.map((listing) => (
-                <ListingCard key={listing._id} listing={listing} />
-              ))}
-            </ul>
+            <>
+              <ul className="grid grid-3 list">
+                {listings.map((listing) => (
+                  <ListingCard key={listing._id} listing={listing} />
+                ))}
+              </ul>
+              <Pagination page={page} totalPages={totalPages} total={total} onPageChange={goToPage} />
+            </>
           )}
         </Card>
       </AppShell>

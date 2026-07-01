@@ -22,5 +22,19 @@ export const authService = {
     request<User>("/auth/profile", {
       method: "PATCH",
       body: payload
+    }),
+
+  forgotPassword: (email: string) =>
+    request<{ resetUrl?: string } | null>("/auth/forgot-password", {
+      method: "POST",
+      body: { email },
+      token: null
+    }),
+
+  resetPassword: (token: string, password: string) =>
+    request<null>("/auth/reset-password", {
+      method: "POST",
+      body: { token, password },
+      token: null
     })
 };

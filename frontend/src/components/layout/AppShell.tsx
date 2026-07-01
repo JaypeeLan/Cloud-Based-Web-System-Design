@@ -56,34 +56,38 @@ export const AppShell = ({
   return (
     <main className="page shell-page">
       <div className="aurora" aria-hidden="true" />
-      <header className="shell-header fade-up">
-        <div>
-          <p className="eyebrow">LocalSpot Booker</p>
-          <h1>{title}</h1>
-          <p className="subtitle">{subtitle}</p>
-        </div>
+      <header className="shell-topbar fade-up">
+        <p className="brand">LocalSpot Booker</p>
+
+        <nav className="shell-nav">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={pathname === item.href || pathname.startsWith(`${item.href}/`) ? "active-link" : ""}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
         <div className="stack-right">
-          <p className="user-pill">{user.name} · {user.location}</p>
+          <p className="user-pill">
+            {user.name} · {user.location}
+          </p>
           <button className="ghost-btn" onClick={() => setProfileOpen(true)}>
             Profile
           </button>
-          <button className="ghost-btn" onClick={logout}>
+          <button className="text-btn" onClick={logout}>
             Log out
           </button>
         </div>
       </header>
 
-      <nav className="shell-nav slide-in">
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={pathname === item.href || pathname.startsWith(`${item.href}/`) ? "active-link" : ""}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </nav>
+      <div className="shell-heading slide-in">
+        <h1>{title}</h1>
+        <p className="subtitle">{subtitle}</p>
+      </div>
 
       <section className="shell-content">{children}</section>
 

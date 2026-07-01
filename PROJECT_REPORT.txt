@@ -1,9 +1,9 @@
 LocalSpot Booker: Research, Design, Implementation, and Cloud Deployment Report
 
-Author: Project Team
+Author: Laniran Johnpaul
 Project Type: Cloud-Native Full-Stack Web Application
 Stack: Next.js (Frontend), Express/TypeScript (Backend), MongoDB Atlas (Database), Vercel + Render (Deployment)
-Date: March 2026
+Date: July 2026
 
 1. Executive Summary
 
@@ -218,7 +218,13 @@ The endpoint includes object ID validation and active-listing checks to avoid in
 
 The profile update controller enforces role immutability and rejects payloads attempting to modify role. This protects role integrity and aligns with expected privilege controls.
 
-7.5 Seed script for operational bootstrapping
+7.5 Pagination and owner-side reservation management
+
+Early iterations returned unbounded result sets: the discovery endpoint capped results at 120 documents with no page controls, and reservation lookups had no ceiling-aware pagination. This was corrected by introducing a shared pagination utility (page/limit query parameters, validated and defaulted via schema, with a bounded maximum page size) applied consistently across `GET /listings`, `GET /listings/mine`, `GET /reservations/mine`, and `GET /reservations/owner`. Each of these endpoints now returns a uniform envelope of `{ items, page, limit, total, totalPages }`, which the frontend consumes through a single reusable pagination component.
+
+This change also surfaced a gap in endpoint utilization: `GET /reservations/owner` and `PATCH /reservations/:reservationId/status` existed in the API but were never called from the frontend, meaning listing owners had no way to see or act on bookings made against their own listings. This was closed by adding an "Incoming reservations" view to the host dashboard, with confirm/decline/complete/cancel actions wired to the existing status-update endpoint, and by adding listing-edit support (`PATCH /listings/:listingId`) so owners can revise a listing after creation rather than only creating new ones.
+
+7.6 Seed script for operational bootstrapping
 
 A seed script was created for development and demos. It:
 
@@ -369,10 +375,10 @@ The architecture can be extended with audit logs on profile updates, listing upd
 
 13.1 Near-term improvements
 
-- Add pagination and sorting to listing queries.
+- Add sorting (price, distance, rating) on top of the pagination now in place for listing and reservation queries.
 - Add reservation conflict checks by time window.
-- Add owner-side reservation status management workflow.
 - Add integration tests for key API journeys.
+- Add owner-facing UI feedback (toasts/inline confirmation) for reservation status changes, beyond the current list refresh.
 
 13.2 Medium-term platform enhancements
 
@@ -409,8 +415,8 @@ Most importantly, the project evolved through rigorous iteration: when usability
 
 16. References and Supporting Sources
 
-- World Health Organization. Adherence to long-term therapies: evidence for action.
-- Peer-reviewed digital health and marketplace UX literature on behavior friction, conversion flow, and progressive disclosure.
+- Nielsen Norman Group. Research on progressive disclosure, cognitive load, and task-flow friction in digital marketplace and booking interfaces.
+- Baymard Institute. Studies on checkout/booking-flow abandonment and conversion friction in online marketplaces.
 - Official documentation sources used during implementation:
   - Next.js App Router and deployment docs.
   - Render web service deployment docs.

@@ -6,7 +6,9 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ["customer", "owner", "admin"], default: "customer" },
-    location: { type: String, required: true, trim: true }
+    location: { type: String, required: true, trim: true },
+    passwordResetToken: { type: String },
+    passwordResetExpires: { type: Date }
   },
   { timestamps: true }
 );

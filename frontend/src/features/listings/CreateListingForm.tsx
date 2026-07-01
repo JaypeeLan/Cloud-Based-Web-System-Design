@@ -3,80 +3,105 @@
 import { FormEvent, useState } from "react";
 import type { ListingCategory } from "@/lib/types";
 
-type Props = {
-  onCreate: (payload: {
-    name: string;
-    category: ListingCategory;
-    area: string;
-    address: string;
-    description: string;
-    priceRange: "$" | "$$" | "$$$";
-    openingHours: string;
-    capacity: number;
-  }) => Promise<void>;
+export type ListingFormValues = {
+  name: string;
+  category: ListingCategory;
+  area: string;
+  address: string;
+  description: string;
+  priceRange: "$" | "$$" | "$$$";
+  openingHours: string;
+  capacity: number;
 };
 
-export const CreateListingForm = ({ onCreate }: Props) => {
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState<ListingCategory>("salon");
-  const [area, setArea] = useState("");
-  const [address, setAddress] = useState("");
-  const [description, setDescription] = useState("");
-  const [priceRange, setPriceRange] = useState<"$" | "$$" | "$$$">("$$");
-  const [openingHours, setOpeningHours] = useState("");
-  const [capacity, setCapacity] = useState(20);
+const emptyValues: ListingFormValues = {
+  name: "",
+  category: "salon",
+  area: "",
+  address: "",
+  description: "",
+  priceRange: "$$",
+  openingHours: "",
+  capacity: 20
+};
+
+type Props = {
+  initial?: ListingFormValues;
+  submitLabel?: string;
+  onCancel?: () => void;
+  onCreate: (payload: ListingFormValues) => Promise<void>;
+};
+
+export const CreateListingForm = ({ initial, submitLabel, onCancel, onCreate }: Props) => {
+  const [values, setValues] = useState<ListingFormValues>(initial ?? emptyValues);
+  const isEditing = Boolean(initial);
+
+  const update = <K extends keyof ListingFormValues>(key: K, value: ListingFormValues[K]) =>
+    setValues((prev) => ({ ...prev, [key]: value }));
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    await onCreate({
-      name,
-      category,
-      area,
-      address,
-      description,
-      priceRange,
-      openingHours,
-      capacity
-    });
-    setName("");
-    setArea("");
-    setAddress("");
-    setDescription("");
-    setOpeningHours("");
-    setCapacity(20);
+    await onCreate(values);
+    if (!isEditing) {
+      setValues(emptyValues);
+    }
   };
 
   return (
     <form className="stack" onSubmit={submit}>
-      <input required placeholder="Business/Event name" value={name} onChange={(e) => setName(e.target.value)} />
-      <select value={category} onChange={(e) => setCategory(e.target.value as ListingCategory)}>
+      <input
+        required
+        placeholder="Business/Event name"
+        value={values.name}
+        onChange={(e) => update("name", e.target.value)}
+      />
+      <select value={values.category} onChange={(e) => update("category", e.target.value as ListingCategory)}>
         <option value="salon">Salon</option>
         <option value="eatery">Eatery</option>
         <option value="event">Event</option>
       </select>
-      <input required placeholder="Area" value={area} onChange={(e) => setArea(e.target.value)} />
-      <input required placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} />
-      <textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
-      <select value={priceRange} onChange={(e) => setPriceRange(e.target.value as "$" | "$$" | "$$$")}>
+      <input required placeholder="Area" value={values.area} onChange={(e) => update("area", e.target.value)} />
+      <input
+        required
+        placeholder="Address"
+        value={values.address}
+        onChange={(e) => update("address", e.target.value)}
+      />
+      <textarea
+        placeholder="Description"
+        value={values.description}
+        onChange={(e) => update("description", e.target.value)}
+      />
+      <select
+        value={values.priceRange}
+        onChange={(e) => update("priceRange", e.target.value as "$" | "$$" | "$$$")}
+      >
         <option value="$">$</option>
         <option value="$$">$$</option>
         <option value="$$$">$$$</option>
       </select>
       <input
         placeholder="Opening hours"
-        value={openingHours}
-        onChange={(e) => setOpeningHours(e.target.value)}
+        value={values.openingHours}
+        onChange={(e) => update("openingHours", e.target.value)}
       />
       <input
         required
         type="number"
         min={1}
-        value={capacity}
-        onChange={(e) => setCapacity(Number(e.target.value))}
+        value={values.capacity}
+        onChange={(e) => update("capacity", Number(e.target.value))}
       />
-      <button type="submit" className="cta-btn">
-        Create listing
-      </button>
+      <div className="row">
+        <button type="submit" className="cta-btn">
+          {submitLabel ?? "Create listing"}
+        </button>
+        {onCancel ? (
+          <button type="button" className="ghost-btn" onClick={onCancel}>
+            Cancel
+          </button>
+        ) : null}
+      </div>
     </form>
   );
 };

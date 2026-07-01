@@ -2,27 +2,47 @@
 
 import { FormEvent, useState } from "react";
 
-type AuthMode = "login" | "register";
+type AuthMode = "login" | "register" | "forgot";
 
 type Props = {
   busy: boolean;
   onLogin: (email: string, password: string) => Promise<void>;
   onRegister: (name: string, location: string, email: string, password: string) => Promise<void>;
+  onForgotPassword: (email: string) => Promise<{ resetUrl?: string } | null>;
 };
 
-export const AuthPanel = ({ busy, onLogin, onRegister }: Props) => {
+export const AuthPanel = ({ busy, onLogin, onRegister, onForgotPassword }: Props) => {
   const [mode, setMode] = useState<AuthMode>("login");
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [forgotMessage, setForgotMessage] = useState<string | null>(null);
+  const [resetUrl, setResetUrl] = useState<string | null>(null);
+
+  const switchMode = (nextMode: AuthMode) => {
+    setMode(nextMode);
+    setForgotMessage(null);
+    setResetUrl(null);
+  };
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
+
     if (mode === "login") {
       await onLogin(email, password);
       return;
     }
+
+    if (mode === "forgot") {
+      const result = await onForgotPassword(email);
+      setForgotMessage(
+        "If that email is registered, password reset instructions have been sent."
+      );
+      setResetUrl(result?.resetUrl ?? null);
+      return;
+    }
+
     await onRegister(name, location, email, password);
   };
 
@@ -44,18 +64,30 @@ export const AuthPanel = ({ busy, onLogin, onRegister }: Props) => {
         </aside>
 
         <article className="auth-panel slide-in">
-          <div className="auth-tabs">
-            <button type="button" className={mode === "login" ? "active" : ""} onClick={() => setMode("login")}>
-              Login
-            </button>
-            <button
-              type="button"
-              className={mode === "register" ? "active" : ""}
-              onClick={() => setMode("register")}
-            >
-              Register
-            </button>
-          </div>
+          {mode === "forgot" ? (
+            <>
+              <button type="button" className="auth-back-link" onClick={() => switchMode("login")}>
+                Back to login
+              </button>
+              <h2 className="auth-panel-title">Reset your password</h2>
+              <p className="auth-panel-copy">
+                Enter the email linked to your account and we will send reset instructions.
+              </p>
+            </>
+          ) : (
+            <div className="auth-tabs">
+              <button type="button" className={mode === "login" ? "active" : ""} onClick={() => switchMode("login")}>
+                Login
+              </button>
+              <button
+                type="button"
+                className={mode === "register" ? "active" : ""}
+                onClick={() => switchMode("register")}
+              >
+                Register
+              </button>
+            </div>
+          )}
 
           <form className="stack" onSubmit={submit}>
             {mode === "register" ? (
@@ -75,24 +107,65 @@ export const AuthPanel = ({ busy, onLogin, onRegister }: Props) => {
               </>
             ) : null}
 
-            <input
-              required
-              type="email"
-              placeholder="Email address"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
-            <input
-              required
-              type="password"
-              minLength={8}
-              placeholder="Password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-            <button type="submit" className="cta-btn" disabled={busy}>
-              {busy ? "Processing..." : mode === "login" ? "Sign in" : "Create account"}
-            </button>
+            {mode !== "login" || !forgotMessage ? (
+              <input
+                required
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            ) : null}
+
+            {mode === "login" ? (
+              <>
+                <input
+                  required
+                  type="password"
+                  minLength={8}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+                <button type="button" className="auth-inline-link" onClick={() => switchMode("forgot")}>
+                  Forgot password?
+                </button>
+              </>
+            ) : null}
+
+            {mode === "forgot" && forgotMessage ? (
+              <p className="auth-success">{forgotMessage}</p>
+            ) : null}
+
+            {resetUrl ? (
+              <p className="auth-dev-link">
+                Dev reset link:{" "}
+                <a href={resetUrl}>{resetUrl}</a>
+              </p>
+            ) : null}
+
+            {mode === "register" ? (
+              <input
+                required
+                type="password"
+                minLength={8}
+                placeholder="Password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+            ) : null}
+
+            {mode === "forgot" && forgotMessage ? null : (
+              <button type="submit" className="cta-btn" disabled={busy}>
+                {busy
+                  ? "Processing..."
+                  : mode === "login"
+                    ? "Sign in"
+                    : mode === "forgot"
+                      ? "Send reset link"
+                      : "Create account"}
+              </button>
+            )}
           </form>
         </article>
       </section>

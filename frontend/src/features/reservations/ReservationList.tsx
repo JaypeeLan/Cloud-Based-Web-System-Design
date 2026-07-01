@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { Reservation } from "@/lib/types";
 
 type Props = {
@@ -8,7 +9,15 @@ type Props = {
 
 export const ReservationList = ({ reservations }: Props) => {
   if (reservations.length === 0) {
-    return <p>No reservations yet.</p>;
+    return (
+      <div className="empty-state">
+        <p>You don&apos;t have any reservations yet.</p>
+        <p className="muted-text">Browse listings and book a salon, eatery, or event to see it tracked here.</p>
+        <Link href="/discover" className="cta-btn">
+          Browse listings
+        </Link>
+      </div>
+    );
   }
 
   return (
@@ -24,7 +33,10 @@ export const ReservationList = ({ reservations }: Props) => {
             <strong>{listingName}</strong>
             <span>{new Date(reservation.scheduledFor).toLocaleString()}</span>
             <span>
-              Party: {reservation.partySize} | Status: {reservation.status.toUpperCase()}
+              Party: {reservation.partySize} | Status:{" "}
+              <span className={`status-badge status-${reservation.status}`}>
+                {reservation.status.toUpperCase()}
+              </span>
             </span>
           </li>
         );

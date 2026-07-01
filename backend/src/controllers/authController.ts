@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { UserModel } from "../models/User.js";
-import { createToken, comparePassword, hashPassword } from "../services/authService.js";
+import { createToken, comparePassword, hashPassword, createPasswordResetToken, hashPasswordResetToken, buildPasswordResetUrl } from "../services/authService.js";
 import { success } from "../utils/apiResponse.js";
 import { HttpError } from "../utils/httpError.js";
 
@@ -27,6 +27,18 @@ const updateProfileSchema = z
   .refine((payload) => Object.keys(payload).length > 0, {
     message: "At least one profile field must be provided"
   });
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email()
+});
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(8)
+});
+
+const forgotPasswordMessage =
+  "If that email is registered, password reset instructions have been sent.";
 
 export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -183,6 +195,57 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
         "Profile updated"
       )
     );
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { email } = forgotPasswordSchema.parse(req.body);
+    const user = await UserModel.findOne({ email });
+
+    let resetUrl: string | undefined;
+
+    if (user) {
+      const { token, tokenHash, expires } = createPasswordResetToken();
+      user.passwordResetToken = tokenHash;
+      user.passwordResetExpires = expires;
+      await user.save();
+
+      resetUrl = buildPasswordResetUrl(token);
+      console.log(`Password reset link for ${email}: ${resetUrl}`);
+    }
+
+    const responseData =
+      resetUrl && process.env.NODE_ENV !== "production" ? { resetUrl } : null;
+
+    res.json(success(responseData, forgotPasswordMessage));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { token, password } = resetPasswordSchema.parse(req.body);
+    const tokenHash = hashPasswordResetToken(token);
+
+    const user = await UserModel.findOne({
+      passwordResetToken: tokenHash,
+      passwordResetExpires: { $gt: new Date() }
+    });
+
+    if (!user) {
+      throw new HttpError(400, "Invalid or expired reset token");
+    }
+
+    user.passwordHash = await hashPassword(password);
+    user.passwordResetToken = null;
+    user.passwordResetExpires = null;
+    await user.save();
+
+    res.json(success(null, "Password reset successful"));
   } catch (error) {
     next(error);
   }

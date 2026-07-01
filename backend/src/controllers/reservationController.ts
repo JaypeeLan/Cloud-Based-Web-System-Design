@@ -4,6 +4,7 @@ import { ListingModel } from "../models/Listing.js";
 import { ReservationModel } from "../models/Reservation.js";
 import { success } from "../utils/apiResponse.js";
 import { HttpError } from "../utils/httpError.js";
+import { paginate, paginationSchema } from "../utils/pagination.js";
 
 const createReservationSchema = z.object({
   listingId: z.string().min(1),
@@ -45,12 +46,20 @@ export const createReservation = async (req: Request, res: Response, next: NextF
 
 export const listMyReservations = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const reservations = await ReservationModel.find({ customerId: req.auth?.userId })
-      .populate("listingId", "name category area address")
-      .sort({ scheduledFor: -1 })
-      .limit(120);
+    const { page, limit } = paginationSchema.parse(req.query);
+    const filters = { customerId: req.auth?.userId };
+    const skip = (page - 1) * limit;
 
-    res.json(success(reservations));
+    const [reservations, total] = await Promise.all([
+      ReservationModel.find(filters)
+        .populate("listingId", "name category area address")
+        .sort({ scheduledFor: -1 })
+        .skip(skip)
+        .limit(limit),
+      ReservationModel.countDocuments(filters)
+    ]);
+
+    res.json(success(paginate(reservations, total, page, limit)));
   } catch (error) {
     next(error);
   }
@@ -58,16 +67,23 @@ export const listMyReservations = async (req: Request, res: Response, next: Next
 
 export const listOwnerReservations = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const { page, limit } = paginationSchema.parse(req.query);
     const listings = await ListingModel.find({ ownerId: req.auth?.userId }).select("_id");
     const listingIds = listings.map((listing) => listing._id);
+    const filters = { listingId: { $in: listingIds } };
+    const skip = (page - 1) * limit;
 
-    const reservations = await ReservationModel.find({ listingId: { $in: listingIds } })
-      .populate("listingId", "name category area")
-      .populate("customerId", "name email")
-      .sort({ scheduledFor: -1 })
-      .limit(120);
+    const [reservations, total] = await Promise.all([
+      ReservationModel.find(filters)
+        .populate("listingId", "name category area")
+        .populate("customerId", "name email")
+        .sort({ scheduledFor: -1 })
+        .skip(skip)
+        .limit(limit),
+      ReservationModel.countDocuments(filters)
+    ]);
 
-    res.json(success(reservations));
+    res.json(success(paginate(reservations, total, page, limit)));
   } catch (error) {
     next(error);
   }

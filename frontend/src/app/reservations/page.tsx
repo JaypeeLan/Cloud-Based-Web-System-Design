@@ -3,12 +3,13 @@
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card } from "@/components/ui/Card";
+import { Pagination } from "@/components/ui/Pagination";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { ReservationList } from "@/features/reservations/ReservationList";
 import { useReservations } from "@/hooks/useReservations";
 
 export default function ReservationsPage() {
-  const { reservations, loading, reload } = useReservations();
+  const { reservations, loading, page, totalPages, total, goToPage, reload } = useReservations();
 
   return (
     <ProtectedRoute>
@@ -26,7 +27,10 @@ export default function ReservationsPage() {
               <SkeletonCard />
             </div>
           ) : (
-            <ReservationList reservations={reservations} />
+            <>
+              <ReservationList reservations={reservations} />
+              <Pagination page={page} totalPages={totalPages} total={total} onPageChange={goToPage} />
+            </>
           )}
         </Card>
       </AppShell>

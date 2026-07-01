@@ -146,6 +146,54 @@ export const swaggerSpec = {
         }
       }
     },
+    "/auth/forgot-password": {
+      post: {
+        tags: ["Auth"],
+        summary: "Request a password reset link",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["email"],
+                properties: {
+                  email: { type: "string", format: "email" }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          "200": { description: "Reset instructions sent if account exists" }
+        }
+      }
+    },
+    "/auth/reset-password": {
+      post: {
+        tags: ["Auth"],
+        summary: "Reset password with token",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["token", "password"],
+                properties: {
+                  token: { type: "string" },
+                  password: { type: "string", minLength: 8 }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          "200": { description: "Password updated" },
+          "400": { description: "Invalid or expired token" }
+        }
+      }
+    },
     "/auth/me": {
       get: {
         tags: ["Auth"],

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Spinner } from "@/components/ui/Spinner";
 import { AuthPanel } from "@/features/auth/AuthPanel";
 import { useAuth } from "@/providers/AuthProvider";
+import { authService } from "@/services/authService";
 
 export default function AuthPage() {
   const { user, loading, login, register } = useAuth();
@@ -64,9 +65,27 @@ export default function AuthPage() {
     }
   };
 
+  const onForgotPassword = async (email: string) => {
+    setBusy(true);
+    setError(null);
+    try {
+      return await authService.forgotPassword(email);
+    } catch (err) {
+      setError((err as Error).message);
+      return null;
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <>
-      <AuthPanel busy={busy} onLogin={onLogin} onRegister={onRegister} />
+      <AuthPanel
+        busy={busy}
+        onLogin={onLogin}
+        onRegister={onRegister}
+        onForgotPassword={onForgotPassword}
+      />
       {error ? <p className="error floating-error">{error}</p> : null}
     </>
   );

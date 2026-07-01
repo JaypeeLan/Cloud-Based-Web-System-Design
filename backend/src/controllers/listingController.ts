@@ -4,6 +4,7 @@ import { z } from "zod";
 import { ListingModel } from "../models/Listing.js";
 import { success } from "../utils/apiResponse.js";
 import { HttpError } from "../utils/httpError.js";
+import { paginate, paginationSchema } from "../utils/pagination.js";
 
 const listingSchema = z.object({
   name: z.string().min(2),
@@ -17,11 +18,13 @@ const listingSchema = z.object({
   active: z.boolean().optional()
 });
 
-const searchSchema = z.object({
-  area: z.string().optional(),
-  category: z.enum(["salon", "eatery", "event"]).optional(),
-  q: z.string().optional()
-});
+const searchSchema = z
+  .object({
+    area: z.string().optional(),
+    category: z.enum(["salon", "eatery", "event"]).optional(),
+    q: z.string().optional()
+  })
+  .merge(paginationSchema);
 
 export const createListing = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -59,8 +62,13 @@ export const listListings = async (req: Request, res: Response, next: NextFuncti
       ];
     }
 
-    const listings = await ListingModel.find(filters).sort({ createdAt: -1 }).limit(120);
-    res.json(success(listings));
+    const skip = (query.page - 1) * query.limit;
+    const [listings, total] = await Promise.all([
+      ListingModel.find(filters).sort({ createdAt: -1 }).skip(skip).limit(query.limit),
+      ListingModel.countDocuments(filters)
+    ]);
+
+    res.json(success(paginate(listings, total, query.page, query.limit)));
   } catch (error) {
     next(error);
   }
@@ -68,8 +76,16 @@ export const listListings = async (req: Request, res: Response, next: NextFuncti
 
 export const myListings = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const listings = await ListingModel.find({ ownerId: req.auth?.userId }).sort({ createdAt: -1 });
-    res.json(success(listings));
+    const { page, limit } = paginationSchema.parse(req.query);
+    const filters = { ownerId: req.auth?.userId };
+    const skip = (page - 1) * limit;
+
+    const [listings, total] = await Promise.all([
+      ListingModel.find(filters).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      ListingModel.countDocuments(filters)
+    ]);
+
+    res.json(success(paginate(listings, total, page, limit)));
   } catch (error) {
     next(error);
   }

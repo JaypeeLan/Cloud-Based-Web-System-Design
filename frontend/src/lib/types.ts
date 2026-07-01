@@ -33,3 +33,11 @@ export type Reservation = {
   status: "pending" | "confirmed" | "cancelled" | "completed";
   note: string;
 };
+
+export type Paginated<T> = {
+  items: T[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
