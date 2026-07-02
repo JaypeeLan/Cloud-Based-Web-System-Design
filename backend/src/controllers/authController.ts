@@ -40,10 +40,13 @@ const resetPasswordSchema = z.object({
 const forgotPasswordMessage =
   "If that email is registered, password reset instructions have been sent.";
 
+const normalizeEmail = (email: string) => email.trim().toLowerCase();
+
 export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const payload = registerSchema.parse(req.body);
-    const existingUser = await UserModel.findOne({ email: payload.email });
+    const email = normalizeEmail(payload.email);
+    const existingUser = await UserModel.findOne({ email });
 
     if (existingUser) {
       throw new HttpError(409, "Email is already in use");
@@ -53,7 +56,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     const user = await UserModel.create({
       name: payload.name,
       location: payload.location,
-      email: payload.email,
+      email,
       passwordHash,
       role: payload.role ?? "customer"
     });
@@ -87,9 +90,9 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 export const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const payload = loginSchema.parse(req.body);
-    const user = await UserModel.findOne({ email: payload.email });
+    const user = await UserModel.findOne({ email: normalizeEmail(payload.email) });
 
-    if (!user) {
+    if (!user?.passwordHash) {
       throw new HttpError(401, "Invalid credentials");
     }
 
@@ -202,7 +205,8 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
 
 export const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email } = forgotPasswordSchema.parse(req.body);
+    const { email: rawEmail } = forgotPasswordSchema.parse(req.body);
+    const email = normalizeEmail(rawEmail);
     const user = await UserModel.findOne({ email });
 
     let resetUrl: string | undefined;
