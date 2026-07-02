@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { Button } from "@/components/ui/Button";
 import type { ListingCategory } from "@/lib/types";
 
 type Props = {
@@ -11,14 +12,20 @@ export const SearchBar = ({ onSearch }: Props) => {
   const [q, setQ] = useState("");
   const [area, setArea] = useState("");
   const [category, setCategory] = useState<"" | ListingCategory>("");
+  const [busy, setBusy] = useState(false);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    await onSearch({
-      q: q || undefined,
-      area: area || undefined,
-      category: category || undefined
-    });
+    setBusy(true);
+    try {
+      await onSearch({
+        q: q || undefined,
+        area: area || undefined,
+        category: category || undefined
+      });
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -31,9 +38,9 @@ export const SearchBar = ({ onSearch }: Props) => {
         <option value="eatery">Eatery</option>
         <option value="event">Event</option>
       </select>
-      <button type="submit" className="cta-btn">
+      <Button type="submit" variant="cta" loading={busy} loadingLabel="Searching...">
         Find places
-      </button>
+      </Button>
     </form>
   );
 };

@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 import type { Reservation } from "@/lib/types";
 
 type Props = {
@@ -21,6 +23,18 @@ const nextActions: Record<Reservation["status"], { label: string; status: Reserv
 };
 
 export const OwnerReservationList = ({ reservations, onUpdateStatus }: Props) => {
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+
+  const handleUpdate = async (reservationId: string, status: Reservation["status"]) => {
+    const key = `${reservationId}:${status}`;
+    setPendingAction(key);
+    try {
+      await onUpdateStatus(reservationId, status);
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
   if (reservations.length === 0) {
     return <p className="muted-text">No incoming reservations yet. Bookings against your listings will show up here.</p>;
   }
@@ -46,15 +60,22 @@ export const OwnerReservationList = ({ reservations, onUpdateStatus }: Props) =>
             </span>
             {nextActions[reservation.status].length > 0 ? (
               <div className="row">
-                {nextActions[reservation.status].map((action) => (
-                  <button
-                    key={action.status}
-                    className="ghost-btn"
-                    onClick={() => void onUpdateStatus(reservation._id, action.status)}
-                  >
-                    {action.label}
-                  </button>
-                ))}
+                {nextActions[reservation.status].map((action) => {
+                  const actionKey = `${reservation._id}:${action.status}`;
+
+                  return (
+                    <Button
+                      key={action.status}
+                      variant="ghost"
+                      loading={pendingAction === actionKey}
+                      loadingLabel={action.label}
+                      disabled={pendingAction !== null && pendingAction !== actionKey}
+                      onClick={() => void handleUpdate(reservation._id, action.status)}
+                    >
+                      {action.label}
+                    </Button>
+                  );
+                })}
               </div>
             ) : null}
           </li>

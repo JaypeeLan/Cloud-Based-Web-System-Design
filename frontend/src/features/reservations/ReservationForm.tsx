@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { Button } from "@/components/ui/Button";
 
 type Props = {
   listingId: string;
@@ -17,18 +18,24 @@ export const ReservationForm = ({ listingId, onReserve, submitLabel = "Confirm r
   const [scheduledFor, setScheduledFor] = useState("");
   const [partySize, setPartySize] = useState(1);
   const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    await onReserve({
-      listingId,
-      scheduledFor,
-      partySize,
-      note: note || undefined
-    });
-    setScheduledFor("");
-    setPartySize(1);
-    setNote("");
+    setBusy(true);
+    try {
+      await onReserve({
+        listingId,
+        scheduledFor,
+        partySize,
+        note: note || undefined
+      });
+      setScheduledFor("");
+      setPartySize(1);
+      setNote("");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -48,9 +55,9 @@ export const ReservationForm = ({ listingId, onReserve, submitLabel = "Confirm r
         onChange={(event) => setPartySize(Number(event.target.value))}
       />
       <textarea placeholder="Note (optional)" value={note} onChange={(event) => setNote(event.target.value)} />
-      <button type="submit" className="cta-btn" disabled={!listingId}>
+      <Button type="submit" variant="cta" loading={busy} loadingLabel="Booking..." disabled={!listingId}>
         {submitLabel}
-      </button>
+      </Button>
     </form>
   );
 };

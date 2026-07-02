@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/Button";
 import { authService } from "@/services/authService";
 
 export default function ResetPasswordPage() {
@@ -87,9 +88,9 @@ export default function ResetPasswordPage() {
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
               />
-              <button type="submit" className="cta-btn" disabled={busy}>
-                {busy ? "Updating..." : "Update password"}
-              </button>
+              <Button type="submit" variant="cta" loading={busy} loadingLabel="Updating...">
+                Update password
+              </Button>
             </form>
           )}
 

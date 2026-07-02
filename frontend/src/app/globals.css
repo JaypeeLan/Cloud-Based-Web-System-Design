@@ -199,10 +199,27 @@ button:hover {
   color: #e4e4e4;
 }
 
-.ghost-btn:disabled {
+.ghost-btn:disabled,
+.cta-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
   transform: none;
+}
+
+.btn-loading {
+  cursor: wait;
+  gap: 0.45rem;
+}
+
+.btn-spinner {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  opacity: 0.75;
+  animation: spin 0.9s linear infinite;
+  flex-shrink: 0;
 }
 
 .text-btn {
@@ -372,7 +389,8 @@ button:hover {
   gap: var(--space-2);
 }
 
-.auth-tabs {
+.auth-tabs,
+.page-tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.3rem;
@@ -383,14 +401,16 @@ button:hover {
   margin-bottom: var(--space-4);
 }
 
-.auth-tabs button {
+.auth-tabs button,
+.page-tabs button {
   background: transparent;
   border-color: transparent;
   color: #bdbdbd;
   padding: 0.55rem;
 }
 
-.auth-tabs .active {
+.auth-tabs .active,
+.page-tabs .active {
   background: var(--surface-3);
   border-color: var(--border);
   color: var(--text);

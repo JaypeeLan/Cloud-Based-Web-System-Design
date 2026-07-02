@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ProfileModal } from "@/components/layout/ProfileModal";
+import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/providers/AuthProvider";
 
 type NavItem = {
@@ -75,12 +76,12 @@ export const AppShell = ({
           <p className="user-pill">
             {user.name} · {user.location}
           </p>
-          <button className="ghost-btn" onClick={() => setProfileOpen(true)}>
+          <Button variant="ghost" onClick={() => setProfileOpen(true)}>
             Profile
-          </button>
-          <button className="text-btn" onClick={logout}>
+          </Button>
+          <Button variant="text" onClick={logout}>
             Log out
-          </button>
+          </Button>
         </div>
       </header>
 

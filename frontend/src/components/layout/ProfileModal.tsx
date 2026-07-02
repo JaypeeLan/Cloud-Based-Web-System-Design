@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { Button } from "@/components/ui/Button";
 import type { User } from "@/lib/types";
 
 type Props = {
@@ -41,9 +42,9 @@ export const ProfileModal = ({ user, open, busy, error, onClose, onSave }: Props
       <section className="modal-panel fade-up">
         <div className="row between">
           <h3>Profile Settings</h3>
-          <button className="ghost-btn" onClick={onClose}>
+          <Button variant="ghost" onClick={onClose} disabled={busy}>
             Close
-          </button>
+          </Button>
         </div>
 
         <form className="stack" onSubmit={submit}>
@@ -75,9 +76,9 @@ export const ProfileModal = ({ user, open, busy, error, onClose, onSave }: Props
 
           {error ? <p className="error">{error}</p> : null}
 
-          <button type="submit" className="cta-btn" disabled={busy}>
-            {busy ? "Saving..." : "Save profile"}
-          </button>
+          <Button type="submit" variant="cta" loading={busy} loadingLabel="Saving...">
+            Save profile
+          </Button>
         </form>
       </section>
     </div>

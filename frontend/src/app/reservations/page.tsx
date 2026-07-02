@@ -3,6 +3,7 @@
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { Pagination } from "@/components/ui/Pagination";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { ReservationList } from "@/features/reservations/ReservationList";
@@ -17,9 +18,9 @@ export default function ReservationsPage() {
         <Card>
           <div className="row between">
             <h2>My reservations</h2>
-            <button className="ghost-btn" onClick={() => void reload()}>
+            <Button variant="ghost" loading={loading} loadingLabel="Refreshing..." onClick={() => void reload()}>
               Refresh
-            </button>
+            </Button>
           </div>
           {loading ? (
             <div className="grid grid-2">

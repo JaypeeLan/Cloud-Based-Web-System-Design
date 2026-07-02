@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { Button } from "@/components/ui/Button";
 import type { ListingCategory } from "@/lib/types";
 
 export type ListingFormValues = {
@@ -34,6 +35,7 @@ type Props = {
 
 export const CreateListingForm = ({ initial, submitLabel, onCancel, onCreate }: Props) => {
   const [values, setValues] = useState<ListingFormValues>(initial ?? emptyValues);
+  const [busy, setBusy] = useState(false);
   const isEditing = Boolean(initial);
 
   const update = <K extends keyof ListingFormValues>(key: K, value: ListingFormValues[K]) =>
@@ -41,9 +43,14 @@ export const CreateListingForm = ({ initial, submitLabel, onCancel, onCreate }: 
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    await onCreate(values);
-    if (!isEditing) {
-      setValues(emptyValues);
+    setBusy(true);
+    try {
+      await onCreate(values);
+      if (!isEditing) {
+        setValues(emptyValues);
+      }
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -93,13 +100,18 @@ export const CreateListingForm = ({ initial, submitLabel, onCancel, onCreate }: 
         onChange={(e) => update("capacity", Number(e.target.value))}
       />
       <div className="row">
-        <button type="submit" className="cta-btn">
+        <Button
+          type="submit"
+          variant="cta"
+          loading={busy}
+          loadingLabel={isEditing ? "Saving..." : "Creating..."}
+        >
           {submitLabel ?? "Create listing"}
-        </button>
+        </Button>
         {onCancel ? (
-          <button type="button" className="ghost-btn" onClick={onCancel}>
+          <Button type="button" variant="ghost" onClick={onCancel} disabled={busy}>
             Cancel
-          </button>
+          </Button>
         ) : null}
       </div>
     </form>

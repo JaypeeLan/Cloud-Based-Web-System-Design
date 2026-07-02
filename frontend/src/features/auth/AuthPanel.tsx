@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { Button } from "@/components/ui/Button";
 
 type AuthMode = "login" | "register" | "forgot";
 
@@ -156,15 +157,14 @@ export const AuthPanel = ({ busy, onLogin, onRegister, onForgotPassword }: Props
             ) : null}
 
             {mode === "forgot" && forgotMessage ? null : (
-              <button type="submit" className="cta-btn" disabled={busy}>
-                {busy
-                  ? "Processing..."
-                  : mode === "login"
-                    ? "Sign in"
-                    : mode === "forgot"
-                      ? "Send reset link"
-                      : "Create account"}
-              </button>
+              <Button
+                type="submit"
+                variant="cta"
+                loading={busy}
+                loadingLabel="Processing..."
+              >
+                {mode === "login" ? "Sign in" : mode === "forgot" ? "Send reset link" : "Create account"}
+              </Button>
             )}
           </form>
         </article>

@@ -5,6 +5,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card } from "@/components/ui/Card";
 import { Pagination } from "@/components/ui/Pagination";
+import { Button } from "@/components/ui/Button";
 import { SkeletonCard } from "@/components/ui/SkeletonCard";
 import { ListingCard } from "@/features/listings/ListingCard";
 import { SearchBar } from "@/features/listings/SearchBar";
@@ -51,9 +52,9 @@ export default function DiscoverPage() {
                 Browse listings first, then open a listing to review details and book.
               </p>
             </div>
-            <button className="ghost-btn" onClick={() => void reloadListings()}>
+            <Button variant="ghost" loading={loading} loadingLabel="Reloading..." onClick={() => void reloadListings()}>
               Reload
-            </button>
+            </Button>
           </div>
           <SearchBar onSearch={runSearch} />
           {error ? <p className="error">{error}</p> : null}
